@@ -1,0 +1,294 @@
+<html>
+
+<head>
+
+    <title></title>
+
+    <meta charset="utf-8" />
+</head>
+
+<body style="padding-left:5%;padding-right:5%;">
+    <div style="text-align:center;"><pre style="line-height:1;font-size:26px;font-weight: bold;">
+   ▄▄▄▄▄    ▄   ██   █  █▀ ▄███▄   
+  █     ▀▄   █  █ █  █▄█   █▀   ▀  
+▄  ▀▀▀▀▄ ██   █ █▄▄█ █▀▄   ██▄▄    
+ ▀▄▄▄▄▀  █ █  █ █  █ █  █  █▄   ▄▀ 
+         █  █ █    █   █   ▀███▀   
+         █   ██   █   ▀            
+                 ▀                 
+</pre>
+<pre id="infobox" style="height:100px;">INFO:<br/></pre>
+    <pre id="canvas">
+</pre><p id="info"></p></div>
+<p id="cred">Game created by <a href="http://www.incode-labs.com/">InCode labs</a></p>
+</body>
+</html>
+
+
+<script>
+    //define variables
+    var entities = []; //x,y,visits
+    var snake = [["-",2,2,"right"],["-",2,3,"right"]]; //char,x,y,direction last to first in line
+    var mapped = "";
+    var x = 2;
+    var y = 3;
+    var foodx = 5;
+    var foody = 5;
+    var foodx2 = 6;
+    var foody2 = 7;
+    var direction = "right";
+    var paused = false;
+    var points = 0;
+    var finish = false;
+    var reduce = true;
+    var nxtpoints = 1100;
+    var splice = 0;
+    var info = "";
+    var wall = 5;
+    var turn = 0;
+    function join(array, seperator) {
+        var output = ""; //use to construct final string
+        var count; //used to keep track of amounts
+        for (count = 0; count < array.length; count++) {
+            output = output + array[count]; //concat everything
+            if (count !== array.length - 1) {
+                output = output + seperator;
+            }
+        }
+        return output;
+    }
+    var world = [
+        ["+" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" , "-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"+" ],
+        ["|" ," " ," " ," " ," " ," " ," " ," " ," " ," " , " " ," " ," " ," " ," " ," " ," " ," " ," " ,"|" ],
+        ["|" ," " ," " ," " ," " ," " ," " ," " ," " ," " , " " ," " ," " ," " ," " ," " ," " ," " ," " ,"|" ],
+        ["|" ," " ," " ," " ," " ," " ," " ," " ," " ," " , " " ," " ," " ," " ," " ," " ," " ," " ," " ,"|" ],
+        ["|" ," " ," " ," " ," " ," " ," " ," " ," " ," " , " " ," " ," " ," " ," " ," " ," " ," " ," " ,"|" ],
+        ["|" ," " ," " ," " ," " ," " ," " ," " ," " ," " , " " ," " ," " ," " ," " ," " ," " ," " ," " ,"|" ],
+        ["|" ," " ," " ," " ," " ," " ," " ," " ," " ," " , " " ," " ," " ," " ," " ," " ," " ," " ," " ,"|" ],
+        ["|" ," " ," " ," " ," " ," " ," " ," " ," " ," " , " " ," " ," " ," " ," " ," " ," " ," " ," " ,"|" ],
+        ["|" ," " ," " ," " ," " ," " ," " ," " ," " ," " , " " ," " ," " ," " ," " ," " ," " ," " ," " ,"|" ],
+        
+        ["|" ," " ," " ," " ," " ," " ," " ," " ," " ," " , " " ," " ," " ," " ," " ," " ," " ," " ," " ,"|" ],
+        ["|" ," " ," " ," " ," " ," " ," " ," " ," " ," " , " " ," " ," " ," " ," " ," " ," " ," " ," " ,"|" ],
+        ["|" ," " ," " ," " ," " ," " ," " ," " ," " ," " , " " ," " ," " ," " ," " ," " ," " ," " ," " ,"|" ],
+        ["|" ," " ," " ," " ," " ," " ," " ," " ," " ," " , " " ," " ," " ," " ," " ," " ," " ," " ," " ,"|" ],
+        ["|" ," " ," " ," " ," " ," " ," " ," " ," " ," " , " " ," " ," " ," " ," " ," " ," " ," " ," " ,"|" ],
+        ["+" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" , "-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"-" ,"+" ],
+    ];
+    var drawChar = [
+        
+    ];
+    //A copy - this is where I will draw characters on each frame
+
+    //drawing map
+    var drawFrom = world;
+    
+    
+    
+    var board = []; //blank world array
+    
+    
+    function redraw() {
+        //clearing board for redraw
+        document.getElementById("canvas").innerHTML = ""; //resets the canvas
+        var drawChar = JSON.parse(JSON.stringify(drawFrom)); //this forces the world array into the drawChar array.
+        
+        
+        if(direction=="up"){
+            drawChar[x][y]="▲";
+        }
+        if(direction=="down"){
+            drawChar[x][y]="▼";
+        }
+        if(direction=="left"){
+            drawChar[x][y]="◄";
+        }
+        if(direction=="right"){
+            drawChar[x][y]="►";
+        }/**/
+        
+        
+        //draw snake
+        for(var i = 0;i < snake.length ;i++) {//run through all objects in the array
+            drawChar[snake[i][1]][snake[i][2]] = snake[i][0];
+        }
+        
+        
+        //render pause
+        if(paused==true) {
+            drawChar[x-1][y+2] = "P";
+            drawChar[x-1][y+3] = "A";
+            drawChar[x-1][y+4] = "U";
+            drawChar[x-1][y+5] = "S";
+            drawChar[x-1][y+6] = "E";
+            drawChar[x-1][y+7] = "D";
+        }
+        
+        drawChar[foodx][foody] = "#";
+        drawChar[foodx2][foody2] = "#";
+        
+        //draw entities
+        if(turn%2==0){
+            for(var i = 0;i < entities.length;i++) {//run through all objects in the array
+                if(entities[i][2]>=wall) {
+                    drawChar[entities[i][0]][entities[i][1]] = "■";
+                }
+            }
+        } else {
+            for(var i = 0;i < entities.length;i++) {//run through all objects in the array
+                if(entities[i][2]>=wall) {
+                    if(getSnake(entities[i][0],entities[i][1])==false&&foodx!=entities[i][0]&&foodx2!=entities[i][0]&&foody!=entities[i][1]&&foody2!=entities[i][1]){
+                        drawChar[entities[i][0]][entities[i][1]] = "□";
+                    }
+                    
+                }
+            }
+        }
+        
+        for (var ix = 0; ix < drawChar.length; ix++) {
+            for (var iy = 0; iy < drawChar[ix].length; iy++) {
+                drawChar[ix][iy]+=" ";//make provisions for weird monospace fonts
+            }
+        }
+        //If I don't add this next bit of code, there will be commas everywhere.
+        for (var i = 0; i < drawChar.length; i++) {
+            drawChar[i] = join(drawChar[i], ""); //basically it merges the 2nd dimensions into single strings, converting the 2d array into a 1d array, thus taking away commas.
+        }//no really, try commenting this out and test it.
+
+        //Now to compile the 1d array into a usable string
+        mapped = ""; //resets the temperary mapping variable
+        for (i = 0; i < drawChar.length; i++) {
+            mapped += drawChar[i] + '<br />'; //add a breakline
+        }
+        //finally drawing to the board
+        document.getElementById("canvas").innerHTML = mapped;
+    }
+    function frame() {
+        
+        /*if(getWall(x,y)==false) {
+            entities.push(new Array(x,y,1));
+        } else {
+            entities[getWall(x,y)][2]++;
+            if(entities[getWall(x,y)][2]>=wall){info+="You visited that spot a couple too many times.<br/>"}
+        }*/
+        
+        if(direction=="up"){
+            x--;
+        }
+        if(direction=="down"){
+            x++;
+        }
+        if(direction=="left"){
+            y--;
+        }
+        if(direction=="right"){
+            y++;
+        }
+        if(x==foodx&&y==foody) {
+            
+            info+="You got " + nxtpoints + " points!<br/>";
+            points += nxtpoints;
+            nxtpoints = 1100;
+            foodx=Math.floor((Math.random()*(world.length-4))+4);
+            foody=Math.floor((Math.random()*(world[0].length-4))+4);
+            while(foodx==0||foodx==world.length-1||foody==0||foody==world[0].length-1||getSnake(foodx,foody)) {
+                foodx=Math.floor((Math.random()*(world.length-4))+4);
+                foody=Math.floor((Math.random()*(world[0].length-4))+4);
+            }
+            splice+=1;
+        }
+        if(x==foodx2&&y==foody2) {
+            info+="You got " + nxtpoints + " points!<br/>";
+            points += nxtpoints;
+            nxtpoints = 1100;
+            foodx2=Math.floor((Math.random()*(world.length-4))+4);
+            foody2=Math.floor((Math.random()*(world[0].length-4))+4);
+            while(foodx2==0||foodx2==world.length-1||foody2==0||foody2==world[0].length-1||getSnake(foodx2,foody2)) {
+                foodx2=Math.floor((Math.random()*(world.length-4))+4);
+                foody2=Math.floor((Math.random()*(world[0].length-4))+4);
+            }
+            splice+=1;
+        }
+        if(splice<=0) {
+            snake.splice(0,1);
+        } else {splice--}
+        if(getSnake(x,y)==true) {
+            finish = true;
+        }
+        redraw();
+        if(x==0||x==world.length-1) {
+            finish = true;
+        }
+        if(y==0||y==world[x].length-1) {
+            finish = true;
+        }
+        if(finish==true) {
+            alert("You lost the game");
+        }
+        document.getElementById("infobox").innerHTML="INFO:<br/>"+info;
+        info = "";
+        
+            nxtpoints-=(nxtpoints>100?50:0);
+            document.getElementById("info").innerHTML = "POINTS: " + points + " - NEXT POINTS: " + nxtpoints + " - LENGTH: " + snake.length;
+    }
+    document.addEventListener('keyup', function(e) {
+        if(paused==false) {
+            if(e.keyCode == 87||e.keyCode == 38) { //w or up
+                if(direction=="up")             {snake.push(new Array("|",x,y,"up"));direction="up";frame();}
+                else if(direction == "down")    {}
+                else if(direction == "left")    {snake.push(new Array("└",x,y,"up"));direction="up";frame();}
+                else if(direction == "right")   {snake.push(new Array("┘",x,y,"up"));direction="up";frame();}
+            }
+            if(e.keyCode == 83||e.keyCode == 40) { //s or down
+                if(direction=="up")             {}
+                else if(direction == "down")    {snake.push(new Array("|",x,y,"down"));direction="down";frame();}
+                else if(direction == "left")    {snake.push(new Array("┌",x,y,"down"));direction="down";frame();}
+                else if(direction == "right")   {snake.push(new Array("┐",x,y,"down"));direction="down";frame();}
+            }
+            if(e.keyCode == 65||e.keyCode == 37) { //a or left
+                if(direction=="right")             {}
+                else if(direction == "left")    {snake.push(new Array("-",x,y,"left"));direction="left";frame();}
+                else if(direction == "up")    {snake.push(new Array("┐",x,y,"left"));direction="left";frame();}
+                else if(direction == "down")   {snake.push(new Array("┘",x,y,"left"));direction="left";frame();}
+            }
+            if(e.keyCode == 68||e.keyCode == 39) { //d or right
+                if(direction=="right")             {snake.push(new Array("-",x,y,"right"));direction="right";frame();}
+                else if(direction == "left")    {}
+                else if(direction == "up")    {snake.push(new Array("┌",x,y,"right"));direction="right";frame();}
+                else if(direction == "down")   {snake.push(new Array("└",x,y,"right"));direction="right";frame();}
+            }
+        }/*┌┐└┘*/
+        if(e.keyCode == 80) {
+            if(paused==true) {
+                paused=false;
+            } else {
+                paused=true;
+            }
+            redraw()
+        }
+        //redraw();
+    }, false);
+    console.log("Checkpoint 7 - Listeners Loaded");
+    frame();
+    function getSnake(x,y) {
+        for(var i = 0;i < snake.length;i++) {//run through all objects in the array
+            if(x == snake[i][1]) {
+                if(y == snake[i][2]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    function getWall(x,y) {
+        for(var i = 0;i < entities.length;i++) {//run through all objects in the array
+            if(x == entities[i][0]) {
+                if(y == entities[i][1]) {
+                    return i;
+                }
+            }
+        }
+        return false;
+    }
+    //window.setInterval(function(){frame();turn++}, 500); //uncomment this code for a normal game
+</script>
