@@ -15,4 +15,4 @@ Open mw.html in your browser
 Pull requests are welcome. This project is no longer officially supported and pull requests may not be gotten around to.
 
 ## License
-[MIT](https://choosealicense.com/licenses/mit/)
+[Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)
